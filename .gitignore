@@ -1,12 +1,12 @@
-node_modules/
-dist/
-logs/
-vendor/CCursor/Cursor++/node_modules/
+# root-anchored: broad patterns like `data/` would also swallow
+# vendor/CCursor/Cursor++/src/server/data/ — keep everything anchored to /
+/node_modules/
+/dist/
+/logs/
+/data/
+/vendor/CCursor/Cursor++/node_modules/
 参考项目/
-data/
 *.pid
 *.log
 byok-history.json
-alt/
-tools/
 *.tgz
