@@ -1,0 +1,33 @@
+services:
+  ccursor:
+    # 本地构建；若直接用 CI 产物，注释掉 build 并把 image 改为
+    # ghcr.io/<你的用户名或组织>/cursor-byok:latest
+    build: .
+    image: cursor-byok:latest
+    container_name: ccursor-byok
+    restart: unless-stopped
+    ports:
+      - "8630:8630" # 宿主机端口:容器端口，只改左边即可
+    environment:
+      BYOK_HOST: 0.0.0.0 # 容器内必须 0.0.0.0，否则宿主机访问不到
+      BYOK_PORT: "8630" # 与左边映射的容器端口保持一致
+    volumes:
+      # providers.json / routes.json / cursor.db / logs 全在这一个卷里
+      - ccursor-config:/home/node/.ccursor
+      # 想直接用宿主机目录的话，换成 bind mount（注意属主改成 uid 1000）：
+      # - ./data/.ccursor:/home/node/.ccursor
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8630/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  ccursor-config:

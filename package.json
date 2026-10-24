@@ -1,0 +1,31 @@
+{
+  "name": "cursor-byok",
+  "version": "1.0.0",
+  "description": "CCursor BYOK server, patched to run standalone in Docker — point cursor-agent / any ConnectRPC client at your own API keys.",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "bin": {
+    "ccursor-cli": "bin/ccursor-cli.mjs",
+    "ccursor": "bin/ccursor-cli.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/cli.mjs",
+    "dist/server.cjs",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "keywords": ["cursor", "cursor-agent", "byok", "docker", "openai", "anthropic", "cli"],
+  "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "build": "node scripts/build.mjs",
+    "serve": "node dist/server.cjs",
+    "cli": "node src/cli.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

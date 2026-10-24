@@ -1,0 +1,12 @@
+# never ship reference material or local state into the build context
+.git/
+参考项目/
+data/
+node_modules/
+**/node_modules/
+dist/
+logs/
+*.log
+*.pid
+*.tgz
+README
