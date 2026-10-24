@@ -27,7 +27,7 @@ curl http://127.0.0.1:8630/health     # {"ok":true,"mode":"byok"}
 或直接用 GitHub Actions 推到 GHCR 的镜像（把 `<owner>/<repo>` 换成你的仓库）：
 
 ```bash
-docker run -d --name ccursor-byok -p 8630:8630 -v ccursor-config:/home/node/.ccursor ghcr.io/<owner>/<repo>:latest
+docker run -d --name ccursor-byok -p 8630:8630 -v ccursor-config:/home/node/.ccursor ghcr.io/nookmux/ccursor-byok:latest
 ```
 
 ---

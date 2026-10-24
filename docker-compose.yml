@@ -1,7 +1,7 @@
 services:
   ccursor:
     # 本地构建；若直接用 CI 产物，注释掉 build 并把 image 改为
-    # ghcr.io/<你的用户名或组织>/cursor-byok:latest
+    # ghcr.io/nookmux/ccursor-byok:latest
     build: .
     image: cursor-byok:latest
     container_name: ccursor-byok
