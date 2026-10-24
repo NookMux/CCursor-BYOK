@@ -146,8 +146,13 @@ docker cp providers.json ccursor-byok:/home/node/.ccursor/providers.json
 
 ## 镜像构建与 CI
 
-- `Dockerfile`：两阶段构建——builder 装依赖、应用补丁、esbuild 打包成单文件 `server.cjs`；runtime 只带 Node 24 + 产物，非 root 运行，内置 `HEALTHCHECK`（`/health`）。
-- `.github/workflows/docker.yml`：push `main` / 打 `v*` tag 自动构建并推送 **linux/amd64 + linux/arm64** 到 GHCR（`ghcr.io/<owner>/<repo>`），PR 只构建不推送，带 GHA 构建缓存。
+- `Dockerfile`：两阶段构建——builder 装依赖、应用补丁、esbuild 打包成单文件 `server.cjs`；runtime 只带 Node 24 + 产物，非 root 运行，内置 `HEALTHCHECK`（`/health`）。基础镜像按 digest 固定；构建时传 `--build-arg BYOK_VERSION=<git sha>` 可把版本号烙进产物（`docker logs` 启动行与 `/health` 可见），不传则回退包版本。
+- `Dockerfile.ci`：CI 专用——只 `COPY` 预构建好的 `server.cjs`，不再在镜像里跑 npm/esbuild。`server.cjs` 是纯 JS、supermarkdown 自带全平台二进制，镜像内容与架构无关，唯一的架构差异是底镜像。
+- `.github/workflows/docker.yml`（结构借鉴 NookMux）：
+  - `bundle`：server.cjs **只构建一次**（esbuild 产物架构无关），经 artifact 下发给各架构任务；
+  - `build-single-arch`：每架构独占一个 runner 并行构建，推送 per-arch tag（`<tag>-amd64` / `<tag>-arm64`）。公开仓库 arm64 用**免费原生 runner**（`ubuntu-24.04-arm`），不走 QEMU 模拟；仓库转私有后可设 `DOCKER_ARM64_QEMU_FALLBACK=true` 回退；
+  - `create-manifests`：`imagetools create` 把两架构合成多架构 manifest，并用 cosign 无密签名其 digest（带 provenance + SBOM attestation）。
+  - 发布仍是 push 触发：push `main` → `latest`，打 `v*` tag → 同名 tag；每次发布额外打**不可变回滚 tag** `YYYYMMDD-<sha7>`；PR 只构建不推送；所有 action 按 release commit SHA 固定。
 
 ## 本地开发（不用 Docker）
 

@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1
+
+# ── CI-only runtime image ──
+# Consumes the bundle built ONCE by the `bundle` CI job (server.cjs with the
+# version already stamped in + the supermarkdown package, which ships every
+# platform binary). CI assembles a minimal context containing exactly:
+#   server.cjs
+#   node_modules/@vakra-dev/supermarkdown/
+# so image content is identical across architectures — only the base image
+# differs. Local builds must use ./Dockerfile, which vendors, patches and
+# builds everything in-stage from source.
+# Base image (and digest) must match ./Dockerfile — keep the two in sync.
+FROM node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205
+
+# node:24-bookworm-slim ships a built-in unprivileged `node` user (uid/gid 1000)
+RUN mkdir -p /home/node/.ccursor && chown -R node:node /home/node
+
+WORKDIR /app
+COPY server.cjs ./server.cjs
+COPY node_modules/@vakra-dev/supermarkdown ./node_modules/@vakra-dev/supermarkdown
+
+ENV NODE_ENV=production \
+    BYOK_HOST=0.0.0.0 \
+    BYOK_PORT=8630
+
+# providers.json / routes.json / cursor.db / logs all live under $HOME/.ccursor
+USER node
+EXPOSE 8630
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.BYOK_PORT||8630)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "server.cjs"]

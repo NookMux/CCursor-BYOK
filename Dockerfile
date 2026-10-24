@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ── stage 1: bundle the standalone server from the vendored source ──
-FROM node:24-bookworm-slim AS build
+# node:24-bookworm-slim (linux/amd64 + linux/arm64), pinned by digest.
+# Bump with: docker buildx imagetools inspect node:24-bookworm-slim
+# (same pin in Dockerfile.ci — keep the two in sync)
+FROM node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS build
 
 # git — bootstrap.mjs applies patches/*.patch with `git apply`
 RUN apt-get update \
@@ -25,11 +28,15 @@ RUN cd vendor/CCursor/Cursor++ && npm install --omit=dev --no-audit --no-fund
 COPY vendor/ ./vendor/
 COPY patches/ ./patches/
 COPY src/ ./src/
+# version stamped into the bundle by scripts/build.mjs (startup log + /health);
+# empty locally — build.mjs falls back to the package version
+ARG BYOK_VERSION=""
+ENV BYOK_VERSION=${BYOK_VERSION}
 # installs nothing (deps already present), applies patches/, bundles dist/server.cjs
 RUN node scripts/bootstrap.mjs
 
 # ── stage 2: minimal runtime ──
-FROM node:24-bookworm-slim
+FROM node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205
 
 # node:24-bookworm-slim ships a built-in unprivileged `node` user (uid/gid 1000)
 RUN mkdir -p /home/node/.ccursor && chown -R node:node /home/node

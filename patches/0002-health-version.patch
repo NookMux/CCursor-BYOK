@@ -1,0 +1,11 @@
+--- a/Cursor++/src/server/index.ts
++++ b/Cursor++/src/server/index.ts
+@@ -294,7 +294,7 @@
+   })
+ 
+   // Fake auth endpoints
+-  server.get('/health', async () => ({ ok: true, mode: 'byok' }))
++  server.get('/health', async () => ({ ok: true, mode: 'byok', version: (globalThis as any).__BYOK_VERSION__ ?? null }))
+ 
+   server.get('/auth/full_stripe_profile', async () => ({
+     membershipType: 'ultra',

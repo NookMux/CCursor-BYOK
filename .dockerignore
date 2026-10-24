@@ -1,12 +1,35 @@
-# never ship reference material or local state into the build context
+# Build-context contract for ./Dockerfile (the self-contained local image):
+# needs package.json + package-lock.json, scripts/, vendor/, patches/, src/.
+# (Dockerfile.ci never sees this context — CI assembles its own minimal one
+# from the prebuilt bundle artifact, see .github/workflows/docker.yml.)
+
+# version control & CI
 .git/
-参考项目/
+.github/
+.gitignore
+
+# local state & data
 data/
-node_modules/
-**/node_modules/
 dist/
 logs/
 *.log
 *.pid
 *.tgz
-README
+
+# dependencies (installed fresh inside the build stage)
+node_modules/
+**/node_modules/
+
+# reference material
+参考项目/
+*.md
+LICENSE
+
+# docker files themselves (not needed inside the image)
+Dockerfile
+Dockerfile.ci
+docker-compose.yml
+.dockerignore
+
+# local CLI helper (npm-package only, not needed in the image)
+bin/

@@ -7,6 +7,9 @@ import { startProvidersWatcher, stopProvidersWatcher } from '../vendor/CCursor/C
 import { startRoutesWatcher, stopRoutesWatcher } from '../vendor/CCursor/Cursor++/src/server/config/routesStore'
 import { startServer, stopServer } from '../vendor/CCursor/Cursor++/src/server/index'
 
+// injected by scripts/build.mjs via esbuild `define`
+declare const __BYOK_VERSION__: string
+
 const host = process.env.BYOK_HOST || '127.0.0.1'
 const port = Number(process.env.BYOK_PORT || 39831)
 
@@ -23,7 +26,7 @@ startServer({ host, port })
     // providers.json / routes.json hot-reload, exactly like inside Cursor
     startProvidersWatcher()
     startRoutesWatcher()
-    console.log(`[ccursor-server] listening on http://${r.host}:${r.port}`)
+    console.log(`[ccursor-server] v${__BYOK_VERSION__} listening on http://${r.host}:${r.port}`)
   })
   .catch((err) => {
     console.error('[ccursor-server] failed to start:', err)
